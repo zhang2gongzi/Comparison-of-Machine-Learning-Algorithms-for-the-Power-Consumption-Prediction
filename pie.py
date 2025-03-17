@@ -20,7 +20,7 @@ else:
 
 import matplotlib.pyplot as plt
 
-# 对Wind Speed列进行分箱，划分成三个区间
+# 对Wind Speed列进行分箱，划分成三个区间，绘制风速区间
 df['Wind Speed Bins'] = pd.qcut(df['Wind Speed'], q=3)
 
 # 统计每个区间的数量
@@ -35,4 +35,25 @@ plt.rcParams['font.sans-serif'] = ['WenQuanYi Zen Hei']
 # 绘制饼状图
 plt.pie(bin_counts, labels=bin_counts.index, autopct='%1.1f%%')
 plt.title('风速区间分布饼图')
+plt.show()
+
+# 绘制湿度饼状图
+import matplotlib.pyplot as plt
+
+# 对 Humidity 列进行分箱操作，分为 5 个区间
+df['Humidity_bin'] = pd.cut(df['Humidity'], bins=5)
+
+# 统计每个区间的数量
+humidity_counts = df['Humidity_bin'].value_counts()
+
+# 设置图片清晰度
+plt.rcParams['figure.dpi'] = 300
+
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Zen Hei']
+
+# 绘制饼状图
+plt.pie(humidity_counts, labels=humidity_counts.index, autopct='%1.1f%%')
+plt.axis('equal')
+plt.title('湿度区间分布饼图')
 plt.show()
