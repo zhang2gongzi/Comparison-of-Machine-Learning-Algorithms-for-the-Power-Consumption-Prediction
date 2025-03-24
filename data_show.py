@@ -2,9 +2,14 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# 读取 CSV 文件
+df = pd.read_csv('processed_data317.csv')
 
-# 从CSV文件读取数据，假设文件名为data.csv，第一列为时间，后面三列为zone1, zone2, zone3
-df = pd.read_csv('processed_data.csv', parse_dates=[0], index_col=0)
+# 将最后一列转换为日期时间类型，让 pandas 自动推断格式
+df.iloc[:, -1] = pd.to_datetime(df.iloc[:, -1], format='mixed')
+
+# 设置最后一列为索引
+df.set_index(df.columns[-1], inplace=True)
 
 # 筛选出每个区域中值大于等于 10000 的数据，小于 10000 的值设为 NaN
 df[df[['Zone 1', 'Zone 2', 'Zone 3']] < 10000] = float('nan')
@@ -23,15 +28,12 @@ plt.legend(['Zone 1', 'Zone 2', 'Zone 3'])
 # 显示图表
 plt.show()
 
-# 读取 CSV 文件
-data = pd.read_csv('processed_data.csv')
-
 # 提取特征变量和目标变量
 features = ['Temperature', 'Humidity', 'Wind Speed', 'general diffuse flows', 'diffuse flows']
 targets = ['Zone 1', 'Zone 2', 'Zone 3']
 
 # 计算相关系数矩阵
-correlation_matrix = data[features + targets].corr()
+correlation_matrix = df[features + targets].corr()
 
 # 提取特征与目标变量之间的相关系数
 feature_target_correlation = correlation_matrix.loc[features, targets]
