@@ -3,8 +3,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import numpy as np
+
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 使用黑体，你也可以选择其他支持中文的字体
 plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
 # 读取CSV文件
 data = pd.read_csv('processed_data.csv')
 
@@ -21,29 +24,59 @@ model = DecisionTreeRegressor(random_state=42)
 # 在训练集上训练模型
 model.fit(X_train, y_train)
 
+# 在训练集上进行预测
+y_train_pred = model.predict(X_train)
+
 # 在测试集上进行预测
-y_pred = model.predict(X_test)
+y_test_pred = model.predict(X_test)
 
-# 计算目标变量的标准差
-std_dev = y_test.values.std()
 
-# 根据标准差设定误差阈值
-threshold = std_dev * 0.5  # 可根据实际情况调整
+# 定义一个函数来计算近似准确度
+def calculate_accuracy(y_true, y_pred):
+    # 计算目标变量的标准差
+    std_dev = y_true.values.std()
 
-# 计算预测正确的样本数
-correct_count = 0
-total_count = len(y_test)
+    # 根据标准差设定误差阈值
+    threshold = std_dev * 0.5  # 可根据实际情况调整
 
-for i in range(total_count):
-    if all(abs(y_pred[i] - y_test.iloc[i].values) <= threshold):
-        correct_count += 1
+    # 计算预测正确的样本数
+    correct_count = 0
+    total_count = len(y_true)
 
-# 计算近似准确度
-accuracy = correct_count / total_count
+    for i in range(total_count):
+        if all(abs(y_pred[i] - y_true.iloc[i].values) <= threshold):
+            correct_count += 1
 
-print('均方误差：', mean_squared_error(y_test, y_pred))
-print('决定系数：', r2_score(y_test, y_pred))
-print('近似准确度：', accuracy)
+    # 计算近似准确度
+    accuracy = correct_count / total_count
+    return accuracy
+
+
+# 计算训练集和测试集的近似准确度
+train_accuracy = calculate_accuracy(y_train, y_train_pred)
+test_accuracy = calculate_accuracy(y_test, y_test_pred)
+
+# 计算训练集和测试集的均方误差
+train_mse = mean_squared_error(y_train, y_train_pred)
+test_mse = mean_squared_error(y_test, y_test_pred)
+
+# 计算训练集和测试集的 RMSE
+train_rmse = np.sqrt(train_mse)
+test_rmse = np.sqrt(test_mse)
+
+# 计算训练集和测试集的决定系数
+train_r2 = r2_score(y_train, y_train_pred)
+test_r2 = r2_score(y_test, y_test_pred)
+
+print('训练集均方误差：', train_mse)
+print('训练集 RMSE：', train_rmse)
+print('训练集决定系数：', train_r2)
+print('训练集近似准确度：', train_accuracy)
+
+print('测试集均方误差：', test_mse)
+print('测试集 RMSE：', test_rmse)
+print('测试集决定系数：', test_r2)
+print('测试集近似准确度：', test_accuracy)
 
 # 手动输入特征变量进行验证
 print("\n请输入用于预测的特征变量：")
@@ -73,7 +106,7 @@ print(f"Zone 3: {new_prediction[0][2]}")
 
 # 提取 Zone 1 的真实值和预测值
 zone1_true = y_test['Zone 1'].values
-zone1_pred = y_pred[:, 0]
+zone1_pred = y_test_pred[:, 0]
 
 # 绘制折线图
 plt.figure(figsize=(12, 6))
